@@ -1,5 +1,5 @@
 {
-  "name": "serverless-todo-app",
+  "name": "haont1-serverless-todo-app",
   "version": "1.0.0",
   "description": "Serverless TODO image app",
   "dependencies": {
@@ -29,6 +29,6 @@
     "typescript": ">=3.8.0",
     "webpack": "^4.29.6"
   },
-  "author": "Ivan Mushketyk",
-  "license": "MIT"
+  "author": "Nguyen Tat Hao",
+  "license": "FPT Software"
 }
