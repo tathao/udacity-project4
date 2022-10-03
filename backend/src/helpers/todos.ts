@@ -1,14 +1,11 @@
-import { TodosAccess } from './todosAcess'
+import { TodoItem } from '../models/TodoItem';
 import { AttachmentUtils } from './attachmentUtils';
-import { TodoItem } from '../models/TodoItem'
 import { CreateTodoRequest } from '../requests/CreateTodoRequest'
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
-//import { createLogger } from '../utils/logger'
 import * as uuid from 'uuid'
-//import * as createError from 'http-errors'
+import { TodosAccess } from './todosAcess';
 
-// TODO: Implement businessLogic
-const todosAccess = new TodosAccess()
+const todosAccess = new TodosAccess();
 const attachmentUtils = new AttachmentUtils()
 
 // TODO: Implement businessLogic
@@ -43,6 +40,7 @@ export async function updateTodo(updateTodoRequest: UpdateTodoRequest, todoId: s
     return await todosAccess.updateTodosForUser(updateTodoRequest, userId, todoId)
 }
 
-export async function attachmentURL(todoId: string, userId: string) {
-    return await attachmentUtils.attachmentURL(todoId, userId)
+export async function attachURL(todoId: string, userId: string) {
+    return await  attachmentUtils.attachURL(todoId, userId)
 }
+

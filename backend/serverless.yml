@@ -1,7 +1,7 @@
 # TODO: Change the name of the org 
 org: tathao
 app: haont1-serverless-todo-app
-service: haont1-serverless-todo-service
+service: haont1-serverless-todo-app
 
 plugins:
   - serverless-webpack
@@ -28,7 +28,7 @@ provider:
   environment:
     TODOS_TABLE: Todos-${self:provider.stage}
     TODOS_CREATED_AT_INDEX: CreatedAtIndex
-    ATTACHMENT_S3_BUCKET: haont1-s3-bucket-${self:provider.stage}
+    ATTACHMENT_S3_BUCKET: haont1-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
 
   logs:
@@ -99,9 +99,6 @@ functions:
           path: todos/{todoId}
           cors: true
           authorizer: Auth
-          request:
-            schemas:
-              application/json: ${file(models/update-todo-model.json)}
     iamRoleStatementsInherit: true
     iamRoleStatements:
       - Effect: Allow
@@ -201,29 +198,18 @@ resources:
           CorsRules:
             - AllowedHeaders:
                 - '*'
+              AllowedOrigins:
+                - '*'
               AllowedMethods:
                 - GET
                 - PUT
-              AllowedOrigins:
-                - '*'
-              ExposedHeaders:
-                - Date
-              Id: myCORSRuleId1
-              MaxAge: 3600
-            - AllowedHeaders:
-                - x-amz-*
-              AllowedMethods:
-                - PUT
+                - POST
+                - HEAD
                 - DELETE
-              AllowedOrigins:
-                - 'http://localhost:3000/*'
               ExposedHeaders:
-                - Connection
-                - Server
-                - Date
-              Id: myCORSRuleId2
-              MaxAge: 1800
-
+                - ''
+              Id: haont_cors_id
+              MaxAge: 3600
     # TODO: Complete the policy below and attach it to the bucket defined above
     # For cross referencing the name of the bucket, use "!Ref AttachmentsBucket"
     BucketPolicy:
@@ -234,8 +220,7 @@ resources:
           Version: '2012-10-17'
           Statement:
             - Action:
-                - 's3:GetObject'
-                - 's3:PutObject'
+                - 's3:*'
               Effect: Allow
               Resource: !Join
                 - ''
@@ -243,11 +228,8 @@ resources:
                   - !Ref AttachmentsBucket
                   - /*
               Principal: '*'
-              Condition:
-                StringLike:
-                  'aws:Referer':
-                    - 'http://localhost:3000/*'
+
   Outputs:
     BucketName:
       Value: !Ref AttachmentsBucket
-      Description: Amazon S3 bucket with CORS enabled.
+      Description: Name of the sample Amazon S3 bucket with CORS enabled.
