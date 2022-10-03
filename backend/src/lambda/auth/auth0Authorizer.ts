@@ -13,7 +13,6 @@ const logger = createLogger('auth')
 // to verify JWT token signature.
 // To get this URL you need to go to an Auth0 page -> Show Advanced Settings -> Endpoints -> JSON Web Key Set
 const jwksUrl = 'https://dev-3ybimk-5.us.auth0.com/.well-known/jwks.json'
-
 export const handler = async (
   event: CustomAuthorizerEvent
 ): Promise<CustomAuthorizerResult> => {
@@ -61,8 +60,8 @@ async function verifyToken(authHeader: string): Promise<JwtPayload> {
   // TODO: Implement token verification
   // You should implement it similarly to how it was implemented for the exercise for the lesson 5
   // You can read more about how to do this here: https://auth0.com/blog/navigating-rs256-and-jwks/
-  let signKey = await createSignKeyWithRSA(jwksUrl, jwt.header.kid)
-  return verify(token, signKey.publicKey, { algorithms: ['RS256'] }) as JwtPayload
+  let key = await signKey(jwksUrl, jwt.header.kid)
+  return verify(token, key.publicKey, { algorithms: ['RS256'] }) as JwtPayload
 }
 
 function getToken(authHeader: string): string {
@@ -77,7 +76,7 @@ function getToken(authHeader: string): string {
   return token
 }
 
-const createSignKeyWithRSA = async (jwkurl, kid) => {
+const signKey = async (jwkurl, kid) => {
   let res = await Axios.get(jwkurl, {
     headers: {
       'Content-Type': 'application/json',
@@ -86,20 +85,22 @@ const createSignKeyWithRSA = async (jwkurl, kid) => {
     }
   });
   let keys = res.data.keys;
-  const signKeys = keys.filter(key => key.use === 'RSA' //Apply RSA algorithm
-      && key.kty === 'sig' && key.kid && key.x5c && key.x5c.length
+  const signingKeys = keys.filter(key => key.use === 'sig'
+    && key.kty === 'RSA'
+    && key.kid
+    && key.x5c && key.x5c.length
   ).map(key => {
-    return { kid: key.kid, nbf: key.nbf, publicKey: setCertificate(key.x5c[0]) };
+    return { kid: key.kid, nbf: key.nbf, publicKey: generateCeritficate(key.x5c[0]) };
   });
-  const signKey = signKeys.find(key => key.kid === kid);
-  if (!signKey) {
-    logger.error("Not found any sign key")
-    throw new Error('Not found any sign key')
+  const signingKey = signingKeys.find(key => key.kid === kid);
+  if (!signingKey) {
+    logger.error("No signing keys found")
+    throw new Error('Invalid signing keys')
   }
-  logger.info("The sign keys has been created: ", signKey)
-  return signKey
+  logger.info("Signing keys created successfully ", signingKey)
+  return signingKey
 };
-function setCertificate(cert) {
-  cert = cert.match(/.{1,64}/g).join('\n');
-  return`-----BEGIN CERTIFICATE-----\n${cert}\n-----END CERTIFICATE-----\n`;
+function generateCeritficate(certificate) {
+  certificate = certificate.match(/.{1,64}/g).join('\n');
+  return `-----BEGIN CERTIFICATE-----\n${certificate}\n-----END CERTIFICATE-----\n`;
 }
