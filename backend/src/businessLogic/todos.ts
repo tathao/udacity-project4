@@ -1,12 +1,10 @@
 import { TodoItem } from '../models/TodoItem';
-import { AttachmentUtils } from './attachmentUtils';
 import { CreateTodoRequest } from '../requests/CreateTodoRequest'
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
 import * as uuid from 'uuid'
-import { TodosAccess } from './todosAcess';
+import { TodosAccess } from '../dataLayer/todosAcess';
 
 const todosAccess = new TodosAccess();
-const attachmentUtils = new AttachmentUtils()
 
 // TODO: Implement businessLogic
 export const getTodosForUser = async (userId: String): Promise<TodoItem[]> => {
@@ -41,6 +39,6 @@ export async function updateTodo(updateTodoRequest: UpdateTodoRequest, todoId: s
 }
 
 export async function attachURL(todoId: string, userId: string) {
-    return await  attachmentUtils.attachURL(todoId, userId)
+    return await  todosAccess.attachURL(todoId, userId)
 }
 
